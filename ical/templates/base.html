@@ -8,7 +8,6 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <title>iCal file to CSV converter</title>
-        <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <!--[if lt IE 9]>
@@ -22,11 +21,39 @@
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
+      <div class="container">
+        <div class="masthead">
+            <h3 class="muted">iCal file to CSV converter</h3>
+            <div class="navbar">
+              <div class="navbar-inner">
+                <div class="container">
+                  <ul class="nav">
 
+                    {% url 'home' as home_url %}
+                    <li {% ifequal home_url request.path %} class="active" {% endifequal %}>
+                      <a href="{{ home_url }}">Home</a>
+                    </li>
 
-        <div class="container">
+                    {% url 'ical_index' as ical_index_url %}
+                    <li {% ifequal ical_index_url request.path %} class="active" {% endifequal %}>
+                      <a href="{{ ical_index_url }}">Upload</a>
+                    </li>
 
-            <a class="brand" href="/">iCal file to CSV converter</a>
+                    {% url 'ical_show_table' as ical_show_table_url %}
+                    <li {% ifequal ical_show_table_url request.path %} class="active" {% endifequal %}>
+                      <a href="{{ ical_show_table_url }}">Download</a>
+                    </li>
+
+                    {% url 'about' as about_url %}
+                    <li {% ifequal about_url request.path %} class="active" {% endifequal %}>
+                      <a href="{{ about_url }}">About</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+        </div>
+
 
         {% block content %}
         {% endblock %}

@@ -17,4 +17,5 @@ urlpatterns = patterns(
     url(r'^ical/get_csv/$', 'ical_get_csv'),
     url(r'^ical/show_table/$', 'ical_show_table', name='ical_show_table'),
     url(r'^ical/download_csv/$', 'ical_download_csv', name='ical_download_csv'),
+    url(r'^ical_error/$', 'ical_error', name='ical_error'),
 )

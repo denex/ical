@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if error %}
+<div class="alert">
+  <strong>Error!</strong>
+  {{ error }}
+</div>
+{% endif %}
+
+{% endblock %}

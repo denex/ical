@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<h2>Input URL</h2>
+<h4>Input URL or upload iCal file</h4>
 
 {% if url_form %}
     <form action="{% url 'ical_post_url' %}" method="post">
@@ -11,7 +11,7 @@
 
         {{ url_form|bootstrap }}
 
-    <button type="submit" class="btn btn-small btn-success">Post</button>
+    <button type="submit" class="btn btn-small btn-success">Post URL</button>
     </form>
 {% endif %}
 
@@ -20,12 +20,12 @@ or
 {% endif %}
 
 {% if file_form %}
-    <form enctype="multipart/form-data" action="{% url 'ical_upload_file' %}" method="post">
+    <form action="{% url 'ical_upload_file' %}" method="post" {% if file_form.is_multipart %}enctype="multipart/form-data"{% endif %}>
     {% csrf_token %}
 
         {{ file_form|bootstrap }}
 
-    <button type="submit" class="btn btn-small btn-success">Upload</button>
+    <button type="submit" class="btn btn-small btn-success">Upload File</button>
     </form>
 {% endif %}
 

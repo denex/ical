@@ -6,4 +6,4 @@ class UploadIcalFileForm(forms.Form):
 
 
 class ICalUrlForm(forms.Form):
-    url = forms.URLField(label="iCal file URL")
+    url = forms.URLField(label="iCal URL")

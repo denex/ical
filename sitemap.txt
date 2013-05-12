@@ -1,0 +1,4 @@
+/
+    ical # Input url or file
+    get_csv # Renders CSV to table
+    show_table # Shows Table

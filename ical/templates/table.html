@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+
+<a href="/">home</a>
+
+<table>
+    {% for row in table %}
+        <tr>
+            {% for item in row %}
+            <td>{{ item }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+
+<a href={% url 'ical_download_csv' %}>Download as CSV</a>
+
+{% endblock %}

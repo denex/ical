@@ -1,24 +1,98 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.shortcuts import render
 
 # Imaginary function to handle an uploaded file.
 # from somewhere import handle_uploaded_file
 
-from ical_uploadform import UploadFileForm
+from .ical_forms import ICalUrlForm, UploadIcalFileForm
+
+from . import ical
+import csv
 
 
-def ical(request):
-    return render_to_response('ical_input.html', {},
-                              context_instance=RequestContext(request))
+def ical_index(request):
+    initial = {}
+    url = request.session.get('ical_url')
+    if url:
+        initial['url'] = url
+    url_form = ICalUrlForm(initial=initial)
+    file_form = UploadIcalFileForm()
+    return render(request,
+                  'ical_input.html',
+                  {'url_form': url_form, 'file_form': file_form},
+                  context_instance=RequestContext(request))
 
 
-def upload_file(request):
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            handle_uploaded_file(request.FILES['file'])
-            return HttpResponseRedirect('/success/url/')
+def ical_post_url(request):
+    if request.method == 'POST':  # If the form has been submitted...
+        form = ICalUrlForm(request.POST)  # A form bound to the POST data
+        if form.is_valid():  # All validation rules pass
+            # Process the data in form.cleaned_data
+            # ...
+            url = form.cleaned_data['url']
+            request.session['ical_url'] = url
+            return HttpResponseRedirect('/ical/get_csv')  # Redirect after POST
     else:
-        form = UploadFileForm()
-    return render_to_response('upload.html', {'form': form})
+        if request.session.get('ical_url'):
+            form = ICalUrlForm(initial={
+                               'url': request.session.get('ical_url')})
+        else:
+            form = ICalUrlForm()  # An unbound form
+    return render(request,
+                  'ical_input.html',
+                  {'url_form': form},
+                  context_instance=RequestContext(request))
+
+
+def ical_file(request):
+    if request.method == 'POST':
+        form = UploadIcalFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            key, [value] = request.FILES.popitem()
+            print "Parsing iCal from Uploaded file:", key
+            if value:
+                lines = ""
+                for chunk in value.chunks():
+                    lines += chunk
+                table = [ev.as_row() for ev in ical.get_events_from_stream(lines.splitlines())]
+                if table:
+                    request.session['ical_table'] = table
+                    return HttpResponseRedirect('/ical/show_table')
+            return HttpResponseRedirect('/ical/error')
+    form = UploadIcalFileForm()
+    return render_to_response('ical_input.html', {'file_form': form}, context_instance=RequestContext(request))
+
+
+def ical_show_table(request):
+    table = request.session.get('ical_table')
+    if table:
+        return render(request, 'table.html', {'table': table})
+    return HttpResponseRedirect('/ical')
+
+
+def ical_get_csv(request):
+    url = request.session.get('ical_url')
+    if not url:
+        return HttpResponseRedirect('/ical/url')
+    print "Parsing iCal from URL:", url
+    table = [ev.as_row() for ev in ical.getRawEventsFromUrl(url)]
+    if table:
+        request.session['ical_table'] = table
+        return HttpResponseRedirect('/ical/show_table')
+    return HttpResponseRedirect('/ical/error')
+
+
+def ical_download_csv(request):
+    table = request.session.get('ical_table')
+    if not table:
+        return HttpResponseRedirect('/ical')
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+    writer = csv.writer(response)
+    for row in table:
+        writer.writerow(row)
+    return response

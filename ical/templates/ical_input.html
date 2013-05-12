@@ -1,9 +1,30 @@
-<h1>Input URL</h1>
+{% extends "base.html" %}
+{% block content %}
 
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+<h2>Input URL</h2>
 
-<form action="/ical/url/" method="post">
-{% csrf_token %}
-<input type="text" value="" />
-<input type="submit" value="post" />
-</form>
+{% if url_form %}
+    <form action="/ical/url/" method="post">
+    {% csrf_token %}
+
+        {{ url_form }}
+
+    <input type="submit" value="post" />
+    </form>
+{% endif %}
+
+{% if url_form and file_form %}
+or
+{% endif %}
+
+{% if file_form %}
+    <form enctype="multipart/form-data" action="/ical/file/" method="post">
+    {% csrf_token %}
+
+        {{ file_form }}
+
+    <input type="submit" value="upload" />
+    </form>
+{% endif %}
+
+{% endblock %}

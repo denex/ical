@@ -11,8 +11,8 @@ urlpatterns = patterns(
 
     url(r'^$', TemplateView.as_view(template_name='index.html')),
     url(r'^ical/$', 'ical_index', name='ical_index'),
-    url(r'^ical/url/$', 'ical_post_url'),
-    url(r'^ical/file/$', 'ical_file'),
+    url(r'^ical/url/$', 'ical_post_url', name='ical_post_url'),
+    url(r'^ical/file/$', 'ical_upload_file', name='ical_upload_file'),
     url(r'^ical/get_csv/$', 'ical_get_csv'),
     url(r'^ical/show_table$', 'ical_show_table'),
     url(r'^ical/download_csv/$', 'ical_download_csv', name='ical_download_csv'),

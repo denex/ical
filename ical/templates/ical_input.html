@@ -1,15 +1,17 @@
 {% extends "base.html" %}
+{% load bootstrap %}
+
 {% block content %}
 
 <h2>Input URL</h2>
 
 {% if url_form %}
-    <form action="/ical/url/" method="post">
+    <form action="{% url 'ical_post_url' %}" method="post">
     {% csrf_token %}
 
-        {{ url_form }}
+        {{ url_form|bootstrap }}
 
-    <input type="submit" value="post" />
+    <button type="submit" class="btn btn-small btn-success">Post</button>
     </form>
 {% endif %}
 
@@ -18,12 +20,12 @@ or
 {% endif %}
 
 {% if file_form %}
-    <form enctype="multipart/form-data" action="/ical/file/" method="post">
+    <form enctype="multipart/form-data" action="{% url 'ical_upload_file' %}" method="post">
     {% csrf_token %}
 
-        {{ file_form }}
+        {{ file_form|bootstrap }}
 
-    <input type="submit" value="upload" />
+    <button type="submit" class="btn btn-small btn-success">Upload</button>
     </form>
 {% endif %}
 

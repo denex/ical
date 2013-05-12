@@ -2,6 +2,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.shortcuts import render
+from django.core.urlresolvers import reverse
 
 # Imaginary function to handle an uploaded file.
 # from somewhere import handle_uploaded_file
@@ -10,6 +11,7 @@ from .ical_forms import ICalUrlForm, UploadIcalFileForm
 
 from . import ical
 import csv
+import os
 
 
 def ical_index(request):
@@ -33,7 +35,8 @@ def ical_post_url(request):
             # ...
             url = form.cleaned_data['url']
             request.session['ical_url'] = url
-            return HttpResponseRedirect('/ical/get_csv')  # Redirect after POST
+            request.session['ical_src_file'] = os.path.split(url)[-1]
+            return HttpResponseRedirect(reverse('ical.ical_views.ical_get_csv'))  # Redirect after POST
     else:
         if request.session.get('ical_url'):
             form = ICalUrlForm(initial={
@@ -46,12 +49,13 @@ def ical_post_url(request):
                   context_instance=RequestContext(request))
 
 
-def ical_file(request):
+def ical_upload_file(request):
     if request.method == 'POST':
         form = UploadIcalFileForm(request.POST, request.FILES)
         if form.is_valid():
             key, [value] = request.FILES.popitem()
-            print "Parsing iCal from Uploaded file:", key
+            print "Parsing iCal from Uploaded file:", value.name
+            request.session['ical_src_file'] = value.name
             if value:
                 lines = ""
                 for chunk in value.chunks():
@@ -59,7 +63,7 @@ def ical_file(request):
                 table = [ev.as_row() for ev in ical.get_events_from_stream(lines.splitlines())]
                 if table:
                     request.session['ical_table'] = table
-                    return HttpResponseRedirect('/ical/show_table')
+                    return HttpResponseRedirect(reverse('ical.ical_views.ical_show_table'))
             return HttpResponseRedirect('/ical/error')
     form = UploadIcalFileForm()
     return render_to_response('ical_input.html', {'file_form': form}, context_instance=RequestContext(request))
@@ -69,28 +73,30 @@ def ical_show_table(request):
     table = request.session.get('ical_table')
     if table:
         return render(request, 'table.html', {'table': table})
-    return HttpResponseRedirect('/ical')
+    return HttpResponseRedirect(reverse('ical.ical_views.ical_index'))
 
 
 def ical_get_csv(request):
     url = request.session.get('ical_url')
     if not url:
-        return HttpResponseRedirect('/ical/url')
+        return HttpResponseRedirect(reverse('ical.ical_views.ical_post_url'))
     print "Parsing iCal from URL:", url
     table = [ev.as_row() for ev in ical.getRawEventsFromUrl(url)]
     if table:
         request.session['ical_table'] = table
-        return HttpResponseRedirect('/ical/show_table')
+        return HttpResponseRedirect(reverse('ical.ical_views.ical_show_table'))
     return HttpResponseRedirect('/ical/error')
 
 
 def ical_download_csv(request):
     table = request.session.get('ical_table')
     if not table:
-        return HttpResponseRedirect('/ical')
-    # Create the HttpResponse object with the appropriate CSV header.
+        return HttpResponseRedirect(reverse('ical.ical_views.ical_index'))
+
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+    ical_src_file = request.session.get('ical_src_file', "somefilename.csv")
+    filename = os.path.splitext(ical_src_file)[0]+'.csv'
+    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
 
     writer = csv.writer(response)
     for row in table:

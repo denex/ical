@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load bootstrap %}
 
 {% block content %}
 
@@ -8,9 +7,17 @@
 {% if url_form %}
     <form action="{% url 'ical_post_url' %}" method="post">
     {% csrf_token %}
-
-        {{ url_form|bootstrap }}
-
+        {% for field in url_form %}
+            <div class="control-group {% if field.errors %}error{% endif %} ">
+                {{ field.label_tag }}
+                <div class="controls">
+                    {% if field.errors %}
+                    <div class="alert alert-error">{{ field.errors }}</div>
+                    {% endif %}
+                    {{ field.as_widget }}
+                </div>
+            </div>
+        {% endfor %}
     <button type="submit" class="btn btn-small btn-success">Post URL</button>
     </form>
 {% endif %}
@@ -22,9 +29,17 @@ or
 {% if file_form %}
     <form action="{% url 'ical_upload_file' %}" method="post" {% if file_form.is_multipart %}enctype="multipart/form-data"{% endif %}>
     {% csrf_token %}
-
-        {{ file_form|bootstrap }}
-
+        {% for field in file_form %}
+            <div class="control-group {% if field.errors %}error{% endif %} ">
+                {{ field.label_tag }}
+                <div class="controls">
+                    {% if field.errors %}
+                    <div class="alert alert-error">{{ field.errors }}</div>
+                    {% endif %}
+                    {{ field.as_widget }}
+                </div>
+            </div>
+        {% endfor %}
     <button type="submit" class="btn btn-small btn-success">Upload File</button>
     </form>
 {% endif %}

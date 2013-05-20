@@ -140,6 +140,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'debug_toolbar',
     'gunicorn',
+    'django_jenkins',
 )
 
 # internal ips for debug-toolbar

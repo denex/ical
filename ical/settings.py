@@ -127,6 +127,10 @@ TEMPLATE_DIRS = (
     os.path.join(PROJECT_ROOT, 'templates')
 )
 
+PROJECT_APPS = (
+    'ical',
+)
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',

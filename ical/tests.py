@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
 
 class MyTests(TestCase):
 
-    url_list = [
+    urls_with_redirect = [
         ('/about/', ''),
         ('/ical/', ''),
         ('/ical/url/', ''),
@@ -25,7 +25,7 @@ class MyTests(TestCase):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
 
-        for url, redirect in self.url_list:
+        for url, redirect in self.urls_with_redirect:
             response = self.client.get(url)
             if redirect:
                 try:

@@ -35,7 +35,7 @@ def ical_post_url(request):
             url = form.cleaned_data['url']
             request.session['ical_src_url'] = url
             request.session['ical_src_file'] = os.path.split(url)[-1]
-            return HttpResponseRedirect(reverse('ical.ical_views.ical_get_csv'))  # Redirect after POST
+            return HttpResponseRedirect(reverse('ical_get_csv'))  # Redirect after POST
     else:
         if request.session.get('ical_src_url'):
             form = ICalUrlForm(initial={
@@ -57,11 +57,11 @@ def ical_upload_file(request):
             if file_size > 1048576:
                 request.session['error'] = "File '%s' is too large (%d bytes)" % (
                     filename, file_size)
-                return HttpResponseRedirect(reverse('ical.ical_views.ical_error'))
+                return HttpResponseRedirect(reverse('ical_error'))
             file_ext = os.path.splitext(filename)[-1]
             if file_ext.lower() != ".ics":
                 request.session['error'] = "File '%s' has not extension '.ics'" % (filename)
-                return HttpResponseRedirect(reverse('ical.ical_views.ical_error'))
+                return HttpResponseRedirect(reverse('ical_error'))
             print "Parsing iCal from Uploaded file:", filename, "size:", file_size
             request.session['ical_src_file'] = filename
             if value:
@@ -72,8 +72,8 @@ def ical_upload_file(request):
                     lines.splitlines())]
                 if table:
                     request.session['ical_table'] = table
-                    return HttpResponseRedirect(reverse('ical.ical_views.ical_show_table'))
-            return HttpResponseRedirect(reverse('ical.ical_views.ical_error'))
+                    return HttpResponseRedirect(reverse('ical_show_table'))
+            return HttpResponseRedirect(reverse('ical_error'))
     form = UploadIcalFileForm()
     return render_to_response('ical_input.html', {'file_form': form}, context_instance=RequestContext(request))
 
@@ -84,25 +84,25 @@ def ical_show_table(request):
         filename = request.session.get('ical_src_file')
         source = request.session.get('ical_src_url', filename)
         return render(request, 'table.html', {'table': table, 'source': source})
-    return HttpResponseRedirect(reverse('ical.ical_views.ical_index'))
+    return HttpResponseRedirect(reverse('ical_index'))
 
 
 def ical_get_csv(request):
     url = request.session.get('ical_src_url')
     if not url:
-        return HttpResponseRedirect(reverse('ical.ical_views.ical_post_url'))
+        return HttpResponseRedirect(reverse('ical_post_url'))
     print "Parsing iCal from URL:", url
     table = [ev.as_row() for ev in ical.getRawEventsFromUrl(url)]
     if table:
         request.session['ical_table'] = table
-        return HttpResponseRedirect(reverse('ical.ical_views.ical_show_table'))
-    return HttpResponseRedirect(reverse('ical.ical_views.ical_error'))
+        return HttpResponseRedirect(reverse('ical_show_table'))
+    return HttpResponseRedirect(reverse('ical_error'))
 
 
 def ical_download_csv(request):
     table = request.session.get('ical_table')
     if not table:
-        return HttpResponseRedirect(reverse('ical.ical_views.ical_index'))
+        return HttpResponseRedirect(reverse('ical_index'))
 
     response = HttpResponse(content_type='text/csv')
     ical_src_file = request.session.get('ical_src_file', "somefilename.csv")

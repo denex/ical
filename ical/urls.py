@@ -13,7 +13,7 @@ urlpatterns = patterns(
     url(r'^ical/$', 'ical.ical_views.ical_index', name='ical_index'),
     url(r'^ical/url/$', 'ical.ical_views.ical_post_url', name='ical_post_url'),
     url(r'^ical/file/$', 'ical.ical_views.ical_upload_file', name='ical_upload_file'),
-    url(r'^ical/get_csv/$', 'ical.ical_views.ical_get_csv'),
+    url(r'^ical/get_csv/$', 'ical.ical_views.ical_get_csv', name='ical_get_csv'),
     url(r'^ical/show_table/$', 'ical.ical_views.ical_show_table', name='ical_show_table'),
     url(r'^ical/download_csv/$', 'ical.ical_views.ical_download_csv', name='ical_download_csv'),
     url(r'^ical/error/$', 'ical.ical_views.ical_error', name='ical_error'),

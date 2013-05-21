@@ -1,3 +1,7 @@
+from __future__ import with_statement
+
+from .settings import PROJECT_ROOT
+
 import os
 
 from django.test import TestCase
@@ -29,14 +33,6 @@ class MyTests(TestCase):
                 print "URL:", url
                 raise e
 
-        # response = self.client.post("/my/form/", {"data": "value"})
-        # self.assertEqual(response.status_code, 302)  # Redirect on form
-        # success
-
-        # response = self.client.post("/my/form/", {})
-        # self.assertEqual(response.status_code, 200)  # we get our page back
-        # with an error
-
     def test_url_form(self):
         url = "http://www.google.com/calendar/ical/350imrtqvd076a106dbdfofagk%40group.calendar.google.com/public/basic.ics"
         file_name = os.path.split(url)[-1]
@@ -56,7 +52,7 @@ class MyTests(TestCase):
         self.assertEqual(self.client.session['ical_src_url'], url)
         self.assertEqual(self.client.session['ical_src_file'], file_name)
         # Must redirect to 'ical_show_table'
-        self.assertRedirects(response, reverse('ical.ical_views.ical_get_csv'), target_status_code=302)
+        self.assertRedirects(response, reverse('ical_get_csv'), target_status_code=302)
         # 'ical_table' must exists in session
         self.assertTrue(self.client.session['ical_table'])
         # Must show table
@@ -66,3 +62,17 @@ class MyTests(TestCase):
         response = self.client.get(reverse('ical_download_csv'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
+
+    def test_upload_form(self):
+        file_path = os.path.join(PROJECT_ROOT, '..', "test_ics")
+        files = os.listdir(file_path)
+        for file_name in files:
+            filename = os.path.splitext(file_name)[0] + '.csv'
+            full_file_name = os.path.join(file_path, file_name)
+            with open(full_file_name) as ical:
+                response = self.client.post(reverse('ical_upload_file'), {'file_data': ical})
+                self.assertRedirects(response, reverse('ical_show_table'))
+            # Download as CSV
+            response = self.client.get(reverse('ical_download_csv'))
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))

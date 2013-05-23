@@ -1,0 +1,7 @@
+
+[OSX 10.6]
+/usr/local/bin/python /usr/local/bin/virtualenv ve
+ve/bin/pip install -r requirements.txt
+ve/bin/python manage.py jenkins
+
+/usr/local/bin/python manage.py jenkins

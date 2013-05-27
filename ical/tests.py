@@ -74,3 +74,13 @@ class MyTests(TestCase):
             response = self.client.get(reverse('ical_download_csv'))
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
+
+    def test_ical_test_forms(self):
+        response = self.client.get(reverse('ical_index'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse('ical_post_url'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(reverse('ical_upload_file'), {})
+        self.assertEqual(response.status_code, 200)

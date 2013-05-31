@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 class MyTests(TestCase):
 
     urls_with_redirect = [
+        ('/', ''),
         ('/about/', ''),
         ('/ical/', ''),
         ('/ical/url/', ''),
@@ -22,17 +23,22 @@ class MyTests(TestCase):
     ]
 
     def test_urls(self):
-        response = self.client.get('/')
-        self.assertEqual(response.status_code, 200)
+        for url, _ in self.urls_with_redirect:
+            response = self.client.get(url, follow=True)
+            try:
+                self.assertEqual(response.status_code, 200)
+            except AssertionError, ae:
+                print "URL:", url
+                raise ae
 
         for url, redirect in self.urls_with_redirect:
             response = self.client.get(url)
             if redirect:
                 try:
                     self.assertRedirects(response, redirect)
-                except Exception, e:
+                except AssertionError, ae:
                     print "URL:", url, redirect
-                    raise e
+                    raise ae
             else:
                 self.assertEqual(response.status_code, 200)
 

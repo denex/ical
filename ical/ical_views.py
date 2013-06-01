@@ -3,15 +3,26 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
-
-# Imaginary function to handle an uploaded file.
-# from somewhere import handle_uploaded_file
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 
 from .ical_forms import ICalUrlForm, UploadIcalFileForm
 
 from . import ical
 import csv
 import os
+
+
+def registration(request):
+    form = UserCreationForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        user = form.save()
+        print user
+        return HttpResponseRedirect(reverse('login'))
+
+    return render_to_response('registration/login.html',
+                              {'form': form},
+                              context_instance=RequestContext(request))
 
 
 def ical_index(request):
@@ -99,6 +110,7 @@ def ical_get_csv(request):
     return HttpResponseRedirect(reverse('ical_error'))
 
 
+@login_required
 def ical_download_csv(request):
     table = request.session.get('ical_table')
     if not table:

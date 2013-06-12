@@ -8,7 +8,7 @@ from django.contrib.auth.forms import UserCreationForm
 
 from forms import ICalUrlForm, UploadIcalFileForm
 
-from . import ical
+import ical
 import csv
 import os
 

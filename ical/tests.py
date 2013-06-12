@@ -1,6 +1,6 @@
 from __future__ import with_statement
 
-from .settings import PROJECT_ROOT
+from settings import PROJECT_ROOT
 
 import os
 
@@ -51,6 +51,9 @@ class SmokeTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         response = self.client.post(reverse('ical_upload_file'), {})
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse('registration'))
         self.assertEqual(response.status_code, 200)
 
 

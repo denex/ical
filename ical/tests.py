@@ -6,9 +6,10 @@ import os
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
 
 
-class MyTests(TestCase):
+class SmokeTest(TestCase):
 
     urls_with_redirect = [
         ('/', ''),
@@ -18,16 +19,16 @@ class MyTests(TestCase):
         ('/ical/file/', ''),
         ('/ical/get_csv/', '/ical/url/'),
         ('/ical/show_table/', '/ical/'),
-        ('/ical/download_csv/', '/ical/'),
+        ('/ical/download_csv/', '/accounts/login/?next=/ical/download_csv/'),
         ('/ical/error/', ''),
     ]
 
-    def test_urls(self):
+    def test_all_urls(self):
         for url, _ in self.urls_with_redirect:
             response = self.client.get(url, follow=True)
             try:
                 self.assertEqual(response.status_code, 200)
-            except AssertionError, ae:
+            except AssertionError as ae:
                 print "URL:", url
                 raise ae
 
@@ -36,11 +37,29 @@ class MyTests(TestCase):
             if redirect:
                 try:
                     self.assertRedirects(response, redirect)
-                except AssertionError, ae:
+                except AssertionError as ae:
                     print "URL:", url, redirect
                     raise ae
             else:
                 self.assertEqual(response.status_code, 200)
+
+    def test_urls_reverse(self):
+        response = self.client.get(reverse('ical_index'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(reverse('ical_post_url'), {})
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(reverse('ical_upload_file'), {})
+        self.assertEqual(response.status_code, 200)
+
+
+class iCalTests(TestCase):
+
+    def setUp(self):
+        self.admin_password = 'pass'
+        self.admin = User.objects.create_superuser(
+            'root', 'root@example.com', self.admin_password)
 
     def test_url_form(self):
         url = "http://www.google.com/calendar/ical/350imrtqvd076a106dbdfofagk%40group.calendar.google.com/public/basic.ics"
@@ -62,12 +81,17 @@ class MyTests(TestCase):
         # Must show table
         response = self.client.get(reverse('ical_show_table'))
         self.assertEqual(response.status_code, 200)
-        # Download as CSV
+        # Trying download as CSV without login
         response = self.client.get(reverse('ical_download_csv'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
+        login_url = '%s?next=%s' % (reverse('login'), reverse('ical_download_csv'))
+        self.assertRedirects(response, login_url)
+        # Login and download
+        response = self.client.post(login_url, {'username': self.admin.username, 'password': self.admin_password}, follow=True)
+        self.assertEqual(response['Content-Disposition'], (
+            'attachment; filename="%s"' % filename))
 
-    def test_upload_form(self):
+    def test_upload_file_form(self):
+        self.client.login(username=self.admin.username, password=self.admin_password)
         file_path = os.path.join(PROJECT_ROOT, '..', "test_ics")
         files = os.listdir(file_path)
         for file_name in files:
@@ -78,15 +102,5 @@ class MyTests(TestCase):
                 self.assertRedirects(response, reverse('ical_show_table'))
             # Download as CSV
             response = self.client.get(reverse('ical_download_csv'))
-            self.assertEqual(response.status_code, 200)
+            self.assertIn('Content-Disposition', response)
             self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
-
-    def test_ical_test_forms(self):
-        response = self.client.get(reverse('ical_index'))
-        self.assertEqual(response.status_code, 200)
-
-        response = self.client.get(reverse('ical_post_url'))
-        self.assertEqual(response.status_code, 200)
-
-        response = self.client.post(reverse('ical_upload_file'), {})
-        self.assertEqual(response.status_code, 200)

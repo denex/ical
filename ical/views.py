@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 
-from .ical_forms import ICalUrlForm, UploadIcalFileForm
+from forms import ICalUrlForm, UploadIcalFileForm
 
 from . import ical
 import csv

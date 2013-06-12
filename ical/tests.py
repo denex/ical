@@ -28,18 +28,18 @@ class SmokeTest(TestCase):
             response = self.client.get(url, follow=True)
             try:
                 self.assertEqual(response.status_code, 200)
-            except AssertionError as ae:
+            except AssertionError:
                 print "URL:", url
-                raise ae
+                raise
 
         for url, redirect in self.urls_with_redirect:
             response = self.client.get(url)
             if redirect:
                 try:
                     self.assertRedirects(response, redirect)
-                except AssertionError as ae:
+                except AssertionError:
                     print "URL:", url, redirect
-                    raise ae
+                    raise
             else:
                 self.assertEqual(response.status_code, 200)
 
@@ -60,6 +60,13 @@ class iCalTests(TestCase):
         self.admin_password = 'pass'
         self.admin = User.objects.create_superuser(
             'root', 'root@example.com', self.admin_password)
+
+    def test_registration(self):
+        username = "user"
+        password = "pass"
+        response = self.client.post(reverse('registration'), {'username': username, 'password1': password, 'password2': password})
+        self.assertRedirects(response, reverse('login'))
+        self.assertEquals(User.objects.latest('pk').username, username)
 
     def test_url_form(self):
         url = "http://www.google.com/calendar/ical/350imrtqvd076a106dbdfofagk%40group.calendar.google.com/public/basic.ics"

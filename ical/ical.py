@@ -113,10 +113,7 @@ def get_events_from_stream(string_stream):
     eventContext = []
     for raw_line in string_stream:
         line = raw_line
-        try:
-            line = line.replace('\r', '').replace('\n', '')
-        except:
-            raise
+        line = line.replace('\r', '').replace('\n', '')
         eventContext.append(line)
         if line.startswith('BEGIN:VEVENT'):
             event = iEvent()

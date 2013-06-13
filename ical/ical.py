@@ -1,4 +1,4 @@
-﻿#!/usr/bin/python
+﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 '''
@@ -8,15 +8,14 @@ Created on 28.06.2011
 '''
 
 from __future__ import with_statement
-import sys
 from datetime import datetime, timedelta
 from urllib2 import urlopen
 
-magic_k = 8 / 7.75
 GMT_OFFSET_HOURS = +7  # Asia/Novosibirsk
 
-stdout = sys.stdout
-stderr = sys.stderr
+
+class iCalParseError(Exception):
+    pass
 
 
 class iEvent():
@@ -26,7 +25,7 @@ class iEvent():
         self.dtstart = None
         self.dtend = None
 
-    def close(self):
+    def has_closed(self):
         return (self._summary is not None
                 and self.dtstart is not None
                 and self.dtend is not None)
@@ -43,11 +42,11 @@ class iEvent():
         return result
 
     def as_row(self):
-        return [self.dtstart.strftime('%d.%m.%Y'),
+        return (self.dtstart.strftime('%d.%m.%Y'),
                 self._summary,
                 self.dtstart.strftime('%H:%M'),
                 self.dtend.strftime('%H:%M'),
-                self.getDurationStr()]
+                self.getDurationStr())
 
     def setSummary(self, rawSummary):
         """
@@ -76,15 +75,10 @@ class iEvent():
         if datetimes.endswith('Z'):
             datetimes = datetimes[:-2]
             timeOffset = GMT_OFFSET_HOURS
-        try:
-            date = datetime.strptime(datetimes, formatStr)
-        except ValueError:
-            print>>stderr, "DateStr:", dateString
-            raise
-        else:
-            if timeOffset != 0:
-                date += timedelta(hours=timeOffset)
-            return date
+        date = datetime.strptime(datetimes, formatStr)
+        if timeOffset != 0:
+            date += timedelta(hours=timeOffset)
+        return date
 
     def duration(self):
         """
@@ -129,14 +123,9 @@ def get_events_from_stream(string_stream):
             event.dtend = event.getDateTimeFromStr(
                 line.partition('DTEND')[-1])
         elif line.startswith('END:VEVENT'):
-            if event.close():
-                eventList.append(event)
-            else:
-                print>>stderr, "Broken event:", eventContext
-                print>>stderr, repr(event)
-        else:
-            # print>>stderr, line
-            pass
+            if not event.has_closed():
+                raise iCalParseError("Previous event has not closed")
+            eventList.append(event)
     # sort list by dtstart
     return sorted(eventList, key=lambda ev: ev.dtstart)
 
@@ -150,3 +139,7 @@ def getTotalSeconds(timedelta):
     return float((timedelta.microseconds +
                 (timedelta.seconds + timedelta.days * 24 * 3600)
         * 10 ** 6)) // 10 ** 6
+
+if __name__ == '__main__':
+    # TODO: Add tests here
+    pass

@@ -43,10 +43,29 @@
                       <a href="{{ ical_show_table_url }}">Download</a>
                     </li>
 
+                    {% if user.is_authenticated %}
+                    {% url 'logout' as logout_url %}
+                    <li {% ifequal logout_url request.path %} class="active" {% endifequal %}>
+                      <a href="{{ logout_url }}">Logout</a>
+                    </li>
+
+                    {% else %}
+                    {% url 'login' as login_url %}
+                    <li {% ifequal login_url request.path %} class="active" {% endifequal %}>
+                      <a href="{{ login_url }}">Login</a>
+                    </li>
+
+                    {% url 'registration' as registration_url %}
+                    <li {% ifequal registration_url request.path %} class="active" {% endifequal %}>
+                      <a href="{{ registration_url }}">Registration</a>
+                    </li>
+
+                    {% endif %}
                     {% url 'about' as about_url %}
                     <li {% ifequal about_url request.path %} class="active" {% endifequal %}>
                       <a href="{{ about_url }}">About</a>
                     </li>
+
                   </ul>
                 </div>
               </div>

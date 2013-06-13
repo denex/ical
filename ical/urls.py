@@ -9,10 +9,10 @@ from django.contrib.auth.views import login, logout
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^accounts/login/$',  login, name='login'),
-    url(r'^accounts/logout/$', logout, name='logout'),
-    url(r'^accounts/registration/$', 'ical.views.registration', name='registration'),
-    url(r'^accounts/profile/$', TemplateView.as_view(template_name='registration/login.html'), name='profile'),
+    url(r'^login/$',  login, name='login'),
+    url(r'^logout/$', logout, name='logout'),
+    url(r'^registration/$', 'ical.views.registration', name='registration'),
+    url(r'^profile/$', TemplateView.as_view(template_name='registration/login.html'), name='profile'),
     url(r'^$', TemplateView.as_view(template_name='index.html'), name='home'),
     url(r'^about/$', TemplateView.as_view(template_name='about.html'), name='about'),
     url(r'^ical/$', 'ical.views.ical_index', name='ical_index'),

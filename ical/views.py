@@ -17,7 +17,7 @@ def registration(request):
     form = UserCreationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         user = form.save()
-        print user
+        print "NEW USER:", user
         return HttpResponseRedirect(reverse('login'))
 
     return render_to_response('registration/login.html',

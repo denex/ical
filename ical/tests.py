@@ -19,7 +19,7 @@ class SmokeTest(TestCase):
         ('/ical/file/', ''),
         ('/ical/get_csv/', '/ical/url/'),
         ('/ical/show_table/', '/ical/'),
-        ('/ical/download_csv/', '/accounts/login/?next=/ical/download_csv/'),
+        ('/ical/download_csv/', '/login/?next=/ical/download_csv/'),
         ('/ical/error/', ''),
     ]
 

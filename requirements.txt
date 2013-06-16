@@ -1,3 +1,4 @@
 Django>=1.5
 django-debug-toolbar
 django-jenkins
+lettuce

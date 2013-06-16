@@ -137,6 +137,8 @@ PROJECT_APPS = (
     'ical',
 )
 
+LETTUCE_APPS = PROJECT_APPS
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -152,6 +154,7 @@ INSTALLED_APPS = (
     'debug_toolbar',
     'gunicorn',
     'django_jenkins',
+    'lettuce.django',
 )
 
 # internal ips for debug-toolbar
@@ -189,3 +192,7 @@ LOGGING = {
         },
     }
 }
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/profile/'
+LOGOUT_URL = '/profile/'

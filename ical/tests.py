@@ -20,6 +20,7 @@ class SmokeTest(TestCase):
         ('/ical/get_csv/', '/ical/url/'),
         ('/ical/show_table/', '/ical/'),
         ('/ical/download_csv/', '/login/?next=/ical/download_csv/'),
+        ('/ical/download_xlsx/', '/login/?next=/ical/download_xlsx/'),
         ('/ical/error/', ''),
     ]
 
@@ -105,12 +106,17 @@ class iCalTests(TestCase):
         file_path = os.path.join(PROJECT_ROOT, '..', "test_ics")
         files = os.listdir(file_path)
         for file_name in files:
-            filename = os.path.splitext(file_name)[0] + '.csv'
             full_file_name = os.path.join(file_path, file_name)
             with open(full_file_name) as ical:
                 response = self.client.post(reverse('ical_upload_file'), {'file_data': ical})
                 self.assertRedirects(response, reverse('ical_show_table'))
             # Download as CSV
+            filename = os.path.splitext(file_name)[0] + '.csv'
             response = self.client.get(reverse('ical_download_csv'))
+            self.assertIn('Content-Disposition', response)
+            self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
+            # Download as XLSX
+            filename = os.path.splitext(file_name)[0] + '.xlsx'
+            response = self.client.get(reverse('ical_download_xlsx'))
             self.assertIn('Content-Disposition', response)
             self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))

@@ -140,6 +140,11 @@ def getTotalSeconds(timedelta):
                 (timedelta.seconds + timedelta.days * 24 * 3600)
         * 10 ** 6)) // 10 ** 6
 
+def main():
+    filename = "../test_ics/test.ics"
+    with open(filename, 'r') as f:
+        events = get_events_from_stream(f)
+        print events
+
 if __name__ == '__main__':
-    # TODO: Add tests here
-    pass
+    main()

@@ -1,3 +1,6 @@
+#!/usr/bin/python
+#-*- coding: utf8 -*-
+
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -11,6 +14,8 @@ from forms import ICalUrlForm, UploadIcalFileForm
 import ical
 import csv
 import os
+
+from save_xlsx import save_xlsx
 
 
 def registration(request):
@@ -79,8 +84,7 @@ def ical_upload_file(request):
                 lines = ''
                 for chunk in value.chunks():
                     lines += chunk
-                table = [ev.as_row() for ev in ical.get_events_from_stream(
-                    lines.splitlines())]
+                table = [ev.as_row() for ev in ical.get_events_from_stream(lines.splitlines())]
                 if table:
                     request.session['ical_table'] = table
                     return HttpResponseRedirect(reverse('ical_show_table'))
@@ -124,6 +128,19 @@ def ical_download_csv(request):
     writer = csv.writer(response)
     for row in table:
         writer.writerow(row)
+    return response
+
+@login_required
+def ical_download_xlsx(request):
+    table = request.session.get('ical_table')
+    if not table:
+        return HttpResponseRedirect(reverse('ical_index'))
+
+    ical_src_file = request.session.get('ical_src_file', "somefilename")
+    title = os.path.splitext(ical_src_file)[0]
+    filename = title + '.xlsx'
+    response = HttpResponse(save_xlsx(table, title=title), content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
     return response
 
 

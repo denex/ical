@@ -21,5 +21,6 @@ urlpatterns = patterns('',
     url(r'^ical/get_csv/$', 'ical.views.ical_get_csv', name='ical_get_csv'),
     url(r'^ical/show_table/$', 'ical.views.ical_show_table', name='ical_show_table'),
     url(r'^ical/download_csv/$', 'ical.views.ical_download_csv', name='ical_download_csv'),
+    url(r'^ical/download_xlsx/$', 'ical.views.ical_download_xlsx', name='ical_download_xlsx'),
     url(r'^ical/error/$', 'ical.views.ical_error', name='ical_error'),
 )

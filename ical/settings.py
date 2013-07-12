@@ -88,11 +88,11 @@ STATICFILES_FINDERS = (
 
 # Make this unique, and don't share it with anybody.
 try:
-    from .secret_key import SECRET_KEY
+    from secret_key import SECRET_KEY
 except ImportError:
-    from .generate_secret_key import generate_secret_key
+    from generate_secret_key import generate_secret_key
     generate_secret_key(os.path.join(PROJECT_ROOT, 'secret_key.py'))
-    from .secret_key import SECRET_KEY
+    from secret_key import SECRET_KEY
 
 
 # List of callables that know how to import templates from various sources.

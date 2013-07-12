@@ -5,24 +5,19 @@ import sys
 import os
 
 from openpyxl import Workbook
-from openpyxl.cell import get_column_letter
-from openpyxl.style import Color, Fill
-from openpyxl.reader.excel import load_workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
-def save_xlsx(rows, title=''):
-    wb = Workbook()#optimized_write=True)
+
+def save_xlsx(rows, title):
+    wb = Workbook()
     ws = wb.worksheets[0]
     ws.title = title
 
     for row_idx, row_items in enumerate(rows):
-        # ws.append(row_items)
-        for col_idx, cell_value in enumerate(row_items):
-            cell = ws.cell('%s%s' % (get_column_letter(col_idx + 1), row_idx + 1))
-            cell.value = cell_value
-            # cell.value = "test"
+        ws.append(row_items)
 
     return save_virtual_workbook(wb)
+
 
 def main():
     from ical import get_events_from_stream

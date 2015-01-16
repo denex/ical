@@ -19,8 +19,8 @@ DATABASES = {
         # The following settings are not used with sqlite3:
         'USER': '',
         'PASSWORD': '',
-        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '',                      # Set to empty string for default.
+        'HOST': '',  # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '',  # Set to empty string for default.
     }
 }
 
@@ -93,6 +93,7 @@ except ImportError:
     from generate_secret_key import generate_secret_key
     generate_secret_key(os.path.join(PROJECT_ROOT, 'secret_key.py'))
     from secret_key import SECRET_KEY
+    print "New SECRET_KEY generated:", SECRET_KEY
 
 
 # List of callables that know how to import templates from various sources.
@@ -130,7 +131,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_ROOT, 'templates')
+    os.path.join(PROJECT_ROOT, 'templates'),
 )
 
 PROJECT_APPS = (
@@ -152,7 +153,6 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'ical',
     'debug_toolbar',
-    'gunicorn',
     'django_jenkins',
     'lettuce.django',
 )

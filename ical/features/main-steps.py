@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 import lettuce
 
 from lxml import html
 from django.test.client import Client
-from nose.tools import assert_equals
+
 
 @lettuce.before.all
 def set_browser():

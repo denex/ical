@@ -1,15 +1,13 @@
 ﻿#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 '''
 Created on 28.06.2011
 
-@author: denex
+@author: ddenex@gmail.com
 '''
 
-from __future__ import with_statement
 from datetime import datetime, timedelta
 from urllib2 import urlopen
+
 
 GMT_OFFSET_HOURS = +7  # Asia/Novosibirsk
 
@@ -30,23 +28,18 @@ class iEvent():
                 and self.dtstart is not None
                 and self.dtend is not None)
 
-    def __repr__(self):
-        return "%s-%s: %s" % (self.dtstart, self.dtend, self._summary)
-
-    def __str__(self):
-        result = '%s;"%s";%s;%s;%s' % (self.dtstart.strftime('%d.%m.%Y'),
-                                       self._summary,
-                                       self.dtstart.strftime('%H:%M'),
-                                       self.dtend.strftime('%H:%M'),
-                                       self.getDurationStr())
-        return result
-
-    def as_row(self):
+    def as_tuple(self):
         return (self.dtstart.strftime('%d.%m.%Y'),
                 self._summary,
                 self.dtstart.strftime('%H:%M'),
                 self.dtend.strftime('%H:%M'),
                 self.getDurationStr())
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        return u'%s;"%s";%s;%s;%s' % self.as_tuple()
 
     def setSummary(self, rawSummary):
         """
@@ -86,28 +79,39 @@ class iEvent():
         """
         return self.dtend - self.dtstart
 
+    @staticmethod
+    def getTotalSeconds(timedelta):
+        """
+        Converts timedelta to seconds
+        @param timedelta: timedelta
+        @return: seconds
+        """
+        return float(
+            (timedelta.microseconds +
+                (timedelta.seconds + timedelta.days * 24 * 3600)
+                * 10 ** 6)) // 10 ** 6
+
     def getDurationStr(self):
         """
         @return: String value of time delta
         """
-        seconds = getTotalSeconds(self.duration())
+        seconds = self.getTotalSeconds(self.duration())
         hours = seconds // 3600
         mins = (seconds - hours * 3600) // 60
         return '%d:%02d' % (hours, mins)
 # End of class iEvent
 
 
-def getRawEventsFromUrl(url):
-    return get_events_from_stream(urlopen(url, timeout=3))
-
-
-def get_events_from_stream(string_stream):
+def get_events_from_unicode_stream(unicode_stream):
     event = None
     eventList = []
     eventContext = []
-    for raw_line in string_stream:
+    for raw_line in unicode_stream:
+        assert type(raw_line) is unicode
         line = raw_line
+        assert type(line) is unicode
         line = line.replace('\r', '').replace('\n', '')
+        assert type(line) is unicode
         eventContext.append(line)
         if line.startswith('BEGIN:VEVENT'):
             event = iEvent()
@@ -117,11 +121,9 @@ def get_events_from_stream(string_stream):
             event.setSummary(summary)
         elif line.startswith('DTSTART'):
             if event is not None:
-                event.dtstart = event.getDateTimeFromStr(
-                    line.partition('DTSTART')[-1])
+                event.dtstart = event.getDateTimeFromStr(line.partition('DTSTART')[-1])
         elif line.startswith('DTEND'):
-            event.dtend = event.getDateTimeFromStr(
-                line.partition('DTEND')[-1])
+            event.dtend = event.getDateTimeFromStr(line.partition('DTEND')[-1])
         elif line.startswith('END:VEVENT'):
             if not event.has_closed():
                 raise iCalParseError("Previous event has not closed")
@@ -130,21 +132,25 @@ def get_events_from_stream(string_stream):
     return sorted(eventList, key=lambda ev: ev.dtstart)
 
 
-def getTotalSeconds(timedelta):
-    """
-    Converts timedelta to seconds
-    @param timedelta: timedelta
-    @return: seconds
-    """
-    return float((timedelta.microseconds +
-                (timedelta.seconds + timedelta.days * 24 * 3600)
-        * 10 ** 6)) // 10 ** 6
+def getRawEventsFromUrl(url):
+    return get_events_from_unicode_stream([l.decode('utf-8') for l in urlopen(url, timeout=3)])
 
-def main():
+
+def test():
     filename = "../test_ics/test.ics"
-    with open(filename, 'r') as f:
-        events = get_events_from_stream(f)
-        print events
+    with open(filename) as f:
+        events = get_events_from_unicode_stream([l.decode('utf-8') for l in f])
+    for evt in events:
+        assert type(evt._summary) is unicode
+        u = evt.__unicode__()
+        print u
+        # print type(u)
+        assert type(u) is unicode
+    print events
+
 
 if __name__ == '__main__':
-    main()
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+    test()

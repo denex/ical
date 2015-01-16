@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 import random
 random = random.SystemRandom()
 
@@ -10,7 +8,7 @@ def generate_secret_key(filename):
     secret = ''.join([random.choice(chars) for i in range(length)])
     if filename:
         with open(filename, 'w') as f:
-            f.write('SECRET_KEY="%s"' % secret)
+            f.write('SECRET_KEY = "%s"\n' % secret)
     return secret
 
 

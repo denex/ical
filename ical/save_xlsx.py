@@ -1,5 +1,4 @@
 #!/usr/bin/python
-#-*- coding: utf8 -*-
 
 import sys
 import os
@@ -8,7 +7,7 @@ from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
 
-def save_xlsx(rows, title):
+def save_xlsx_as_data(rows, title):
     wb = Workbook()
     ws = wb.worksheets[0]
     ws.title = title
@@ -19,12 +18,12 @@ def save_xlsx(rows, title):
     return save_virtual_workbook(wb)
 
 
-def main():
+def test():
     from ical import get_events_from_stream
-    with open("/Users/denex/Downloads/SandDraw.ics", 'r') as f:
+    with open("../test_ics/test.ics", 'r') as f:
         events = get_events_from_stream(f)
 
-    rows = [ev.as_row() for ev in events]
+    rows = [ev.as_tuple() for ev in events]
 
     filename = "file.xlsx"
 
@@ -33,10 +32,11 @@ def main():
         print "Deleting:", filename
         os.remove(filename)
     with open(filename, 'wb') as f:
-        f.write(save_xlsx(rows, title="Title"))
+        f.write(save_xlsx_as_data(rows, title="Title"))
     print "File \"%s\" saved" % filename
+
 
 if __name__ == '__main__':
     reload(sys)
     sys.setdefaultencoding('utf-8')
-    main()
+    test()

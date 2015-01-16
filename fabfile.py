@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from fabric.api import run, env, cd, sudo
 
 env.hosts = ['denex@rpi']

@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 from settings import PROJECT_ROOT
 
 import os
@@ -68,7 +66,11 @@ class iCalTests(TestCase):
     def test_registration(self):
         username = "user"
         password = "pass"
-        response = self.client.post(reverse('registration'), {'username': username, 'password1': password, 'password2': password})
+        response = self.client.post(reverse('registration'), {
+            'username': username,
+            'password1': password,
+            'password2': password
+        })
         self.assertRedirects(response, reverse('login'))
         self.assertEquals(User.objects.latest('pk').username, username)
 
@@ -97,9 +99,11 @@ class iCalTests(TestCase):
         login_url = '%s?next=%s' % (reverse('login'), reverse('ical_download_csv'))
         self.assertRedirects(response, login_url)
         # Login and download
-        response = self.client.post(login_url, {'username': self.admin.username, 'password': self.admin_password}, follow=True)
-        self.assertEqual(response['Content-Disposition'], (
-            'attachment; filename="%s"' % filename))
+        response = self.client.post(login_url, {
+                                    'username': self.admin.username,
+                                    'password': self.admin_password},
+                                    follow=True)
+        self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
 
     def test_upload_file_form(self):
         self.client.login(username=self.admin.username, password=self.admin_password)
@@ -109,12 +113,14 @@ class iCalTests(TestCase):
             full_file_name = os.path.join(file_path, file_name)
             with open(full_file_name) as ical:
                 response = self.client.post(reverse('ical_upload_file'), {'file_data': ical})
-                self.assertRedirects(response, reverse('ical_show_table'))
+            self.assertRedirects(response, reverse('ical_show_table'))
+
             # Download as CSV
             filename = os.path.splitext(file_name)[0] + '.csv'
             response = self.client.get(reverse('ical_download_csv'))
             self.assertIn('Content-Disposition', response)
             self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
+
             # Download as XLSX
             filename = os.path.splitext(file_name)[0] + '.xlsx'
             response = self.client.get(reverse('ical_download_xlsx'))

@@ -88,12 +88,12 @@ STATICFILES_FINDERS = (
 
 # Make this unique, and don't share it with anybody.
 try:
-    from secret_key import SECRET_KEY
+    from .secret_key import SECRET_KEY
 except ImportError:
-    from generate_secret_key import generate_secret_key
+    from .generate_secret_key import generate_secret_key
     generate_secret_key(os.path.join(PROJECT_ROOT, 'secret_key.py'))
-    from secret_key import SECRET_KEY
-    print "New SECRET_KEY generated:", SECRET_KEY
+    from .secret_key import SECRET_KEY
+    print("New SECRET_KEY generated:", SECRET_KEY)
 
 
 # List of callables that know how to import templates from various sources.
@@ -111,7 +111,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -138,8 +138,6 @@ PROJECT_APPS = (
     'ical',
 )
 
-LETTUCE_APPS = PROJECT_APPS
-
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -152,17 +150,16 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'ical',
-    'debug_toolbar',
+    # 'debug_toolbar',
     'django_jenkins',
-    'lettuce.django',
 )
 
 # internal ips for debug-toolbar
 INTERNAL_IPS = ('127.0.0.1',)
 
-DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False,
-}
+# DEBUG_TOOLBAR_CONFIG = {
+#     'INTERCEPT_REDIRECTS': False,
+# }
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
@@ -196,3 +193,5 @@ LOGGING = {
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/profile/'
 LOGOUT_URL = '/profile/'
+
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'

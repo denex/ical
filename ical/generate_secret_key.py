@@ -13,4 +13,4 @@ def generate_secret_key(filename):
 
 
 if __name__ == '__main__':
-    print generate_secret_key(None)
+    print(generate_secret_key(None))

@@ -4,3 +4,4 @@ logs/
 reports/
 .idea/
 ical/secret_key.py
+*.sublime-workspace

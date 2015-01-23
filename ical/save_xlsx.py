@@ -28,12 +28,12 @@ def test():
     filename = "file.xlsx"
 
     if os.path.exists(filename):
-        print "File \"%s\" already exists" % filename
-        print "Deleting:", filename
+        print("File \"%s\" already exists" % filename)
+        print("Deleting:", filename)
         os.remove(filename)
     with open(filename, 'wb') as f:
         f.write(save_xlsx_as_data(rows, title="Title"))
-    print "File \"%s\" saved" % filename
+    print("File \"%s\" saved" % filename)
 
 
 if __name__ == '__main__':

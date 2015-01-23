@@ -6,7 +6,7 @@ Created on 28.06.2011
 '''
 
 from datetime import datetime, timedelta
-from urllib2 import urlopen
+from urllib.request import urlopen
 
 
 GMT_OFFSET_HOURS = +7  # Asia/Novosibirsk
@@ -35,11 +35,11 @@ class iEvent():
                 self.dtend.strftime('%H:%M'),
                 self.getDurationStr())
 
-    def __str__(self):
-        return self.__unicode__()
-
     def __unicode__(self):
         return u'%s;"%s";%s;%s;%s' % self.as_tuple()
+
+    def __str__(self):
+        return self.__unicode__()
 
     def setSummary(self, rawSummary):
         """
@@ -107,11 +107,11 @@ def get_events_from_unicode_stream(unicode_stream):
     eventList = []
     eventContext = []
     for raw_line in unicode_stream:
-        assert type(raw_line) is unicode
+        # assert type(raw_line) is unicode
         line = raw_line
-        assert type(line) is unicode
+        # assert type(line) is unicode
         line = line.replace('\r', '').replace('\n', '')
-        assert type(line) is unicode
+        # assert type(line) is unicode
         eventContext.append(line)
         if line.startswith('BEGIN:VEVENT'):
             event = iEvent()
@@ -138,19 +138,20 @@ def getRawEventsFromUrl(url):
 
 def test():
     filename = "../test_ics/test.ics"
-    with open(filename) as f:
-        events = get_events_from_unicode_stream([l.decode('utf-8') for l in f])
+    with open(filename, encoding='utf-8') as f:
+        events = get_events_from_unicode_stream(f.readlines())
     for evt in events:
-        assert type(evt._summary) is unicode
+        # assert type(evt._summary) is unicode
+        # print(evt)
         u = evt.__unicode__()
-        print u
-        # print type(u)
-        assert type(u) is unicode
-    print events
+        print(u)
+        # print(type(u))
+        # assert type(u) is unicode
+    print(events)
 
 
 if __name__ == '__main__':
-    import sys
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
+    # import sys
+    # reload(sys)
+    # sys.setdefaultencoding('utf-8')
     test()

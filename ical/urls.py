@@ -8,7 +8,8 @@ from django.contrib.auth.views import login, logout
 # from django.contrib import admin
 # admin.autodiscover()
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^login/$',  login, name='login'),
     url(r'^logout/$', logout, name='logout'),
     url(r'^registration/$', 'ical.views.registration', name='registration'),

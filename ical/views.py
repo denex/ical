@@ -9,20 +9,20 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 
-from forms import ICalUrlForm, UploadIcalFileForm
+from .forms import ICalUrlForm, UploadIcalFileForm
 
-import ical
+from .ical import getRawEventsFromUrl, get_events_from_unicode_stream
 import csv
 import os
 
-from save_xlsx import save_xlsx_as_data
+from .save_xlsx import save_xlsx_as_data
 
 
 def registration(request):
     form = UserCreationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         user = form.save()
-        print "NEW USER:", user
+        print("NEW USER:", user)
         return HttpResponseRedirect(reverse('login'))
 
     return render_to_response('registration/login.html',
@@ -71,20 +71,19 @@ def ical_upload_file(request):
             filename = value.name
             file_size = value.size
             if file_size > 1048576:
-                request.session['error'] = "File '%s' is too large (%d bytes)" % (
-                    filename, file_size)
+                request.session['error'] = "File '%s' is too large (%d bytes)" % (filename, file_size)
                 return HttpResponseRedirect(reverse('ical_error'))
             file_ext = os.path.splitext(filename)[-1]
             if file_ext.lower() != ".ics":
                 request.session['error'] = "File '%s' has not extension '.ics'" % (filename)
                 return HttpResponseRedirect(reverse('ical_error'))
-            print "Parsing iCal from Uploaded file:", filename, "size:", file_size
+            print("Parsing iCal from Uploaded file:", filename, "size:", file_size)
             request.session['ical_src_file'] = filename
             if value:
                 lines = ''
                 for chunk in value.chunks():
                     lines += chunk.decode('utf-8')
-                table = [ev.as_tuple() for ev in ical.get_events_from_unicode_stream(lines.splitlines())]
+                table = [ev.as_tuple() for ev in get_events_from_unicode_stream(lines.splitlines())]
                 if table:
                     request.session['ical_table'] = table
                     return HttpResponseRedirect(reverse('ical_show_table'))
@@ -106,8 +105,8 @@ def ical_get_csv(request):
     url = request.session.get('ical_src_url')
     if not url:
         return HttpResponseRedirect(reverse('ical_post_url'))
-    print "Parsing iCal from URL:", url
-    table = [ev.as_tuple() for ev in ical.getRawEventsFromUrl(url)]
+    print("Parsing iCal from URL:", url)
+    table = [ev.as_tuple() for ev in getRawEventsFromUrl(url)]
     if table:
         request.session['ical_table'] = table
         return HttpResponseRedirect(reverse('ical_show_table'))
@@ -127,8 +126,9 @@ def ical_download_csv(request):
     response['Content-Disposition'] = 'attachment; filename="%s"' % filename
     writer = csv.writer(response)
     for row in table:
-        # Stupid CSV can not handle unicode, coverting to UTF-8
-        writer.writerow([i.encode('utf-8') for i in row])
+        # Stupid CSV in Python 2 can not handle unicode, coverting to UTF-8
+        # writer.writerow([i.encode('utf-8') for i in row])
+        writer.writerow(row)
     return response
 
 

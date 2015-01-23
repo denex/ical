@@ -6,7 +6,12 @@ Created on 28.06.2011
 '''
 
 from datetime import datetime, timedelta
-from urllib.request import urlopen
+import codecs
+
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 
 
 GMT_OFFSET_HOURS = +7  # Asia/Novosibirsk
@@ -138,7 +143,7 @@ def getRawEventsFromUrl(url):
 
 def test():
     filename = "../test_ics/test.ics"
-    with open(filename, encoding='utf-8') as f:
+    with codecs.open(filename, encoding='utf-8') as f:
         events = get_events_from_unicode_stream(f.readlines())
     for evt in events:
         # assert type(evt._summary) is unicode
@@ -151,7 +156,4 @@ def test():
 
 
 if __name__ == '__main__':
-    # import sys
-    # reload(sys)
-    # sys.setdefaultencoding('utf-8')
     test()

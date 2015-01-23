@@ -126,9 +126,11 @@ def ical_download_csv(request):
     response['Content-Disposition'] = 'attachment; filename="%s"' % filename
     writer = csv.writer(response)
     for row in table:
-        # Stupid CSV in Python 2 can not handle unicode, coverting to UTF-8
-        # writer.writerow([i.encode('utf-8') for i in row])
-        writer.writerow(row)
+        if type(row) is str:
+            writer.writerow(row)
+        else:
+            # Stupid CSV in Python 2 can not handle unicode, coverting to UTF-8
+            writer.writerow([i.encode('utf-8') for i in row])
     return response
 
 

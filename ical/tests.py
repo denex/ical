@@ -75,6 +75,16 @@ class iCalTests(TestCase):
         self.assertRedirects(response, reverse('login'))
         self.assertEquals(User.objects.latest('pk').username, username)
 
+    def test_bad_urls(self):
+        bad_urls = (
+            "http://404.err",
+            "http://ya.ru/404",
+            "http://ya.ru/"
+        )
+        for bad_url in bad_urls:
+            response = self.client.post(reverse('ical_post_url'), {'url': bad_url}, follow=True)
+            self.assertRedirects(response, reverse('ical_error'))
+
     def test_url_form(self):
         url = "http://www.google.com/calendar/ical/350imrtqvd076a106dbdfofagk%40group.calendar.google.com/public/basic.ics"
         file_name = os.path.split(url)[-1]
@@ -106,28 +116,45 @@ class iCalTests(TestCase):
                                     follow=True)
         self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
 
-    # TODO: Fix this test
-    # def test_upload_file_form(self):
-    #     self.client.login(username=self.admin.username, password=self.admin_password)
-    #     file_path = os.path.join(PROJECT_ROOT, '..', "test_ics")
-    #     files = os.listdir(file_path)
-    #     for file_name in files:
-    #         full_file_name = os.path.join(file_path, file_name)
-    #         with open(full_file_name) as ical_f:
-    #             response = self.client.post(reverse('ical_upload_file'), follow=False,
-    #                                         data={'file_data': ical_f.read()})
-    #         self.assertRedirects(response, reverse('ical_show_table'))
+        # GET should show previous entered url
+        response = self.client.get(reverse('ical_post_url'))
+        self.assertContains(response, url)
 
-    #         # Download as CSV
-    #         filename = os.path.splitext(file_name)[0] + '.csv'
-    #         response = self.client.get(reverse('ical_download_csv'), follow=True)
-    #         self.assertEqual(, reverse('ical_download_csv'))
-    #         self.assertEqual(response.status_code, 302)
-    #         self.assertIn('Content-Disposition', response)
-    #         self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
+    def test_bad_files(self):
+        bad_files = (
+            __file__,
+        )
+        for bad_filename in bad_files:
+            with open(bad_filename, 'rb') as f:
+                # Submitting files is a special case.
+                # To POST a file, you need only provide the file field name as a key,
+                # and a file handle to the file you wish to upload as a value.
+                response = self.client.post(reverse('ical_upload_file'),
+                                            data={'file_data': f})
+            self.assertRedirects(response, reverse('ical_error'))
 
-    #         # Download as XLSX
-    #         filename = os.path.splitext(file_name)[0] + '.xlsx'
-    #         response = self.client.get(reverse('ical_download_xlsx'))
-    #         self.assertIn('Content-Disposition', response)
-    #         self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
+    def test_upload_files_form(self):
+        self.client.login(username=self.admin.username, password=self.admin_password)
+        file_path = os.path.join(PROJECT_ROOT, '..', "test_ics")
+        files = os.listdir(file_path)
+        for file_name in files:
+            full_file_name = os.path.join(file_path, file_name)
+            with open(full_file_name, 'rb') as ical_f:
+                # Submitting files is a special case.
+                # To POST a file, you need only provide the file field name as a key,
+                # and a file handle to the file you wish to upload as a value.
+                response = self.client.post(reverse('ical_upload_file'),
+                                            data={'file_data': ical_f})
+            self.assertRedirects(response, reverse('ical_show_table'))
+
+            # Download as CSV
+            filename = os.path.splitext(file_name)[0] + '.csv'
+            response = self.client.get(reverse('ical_download_csv'))
+            self.assertIn('Content-Disposition', response)
+            self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))
+
+            # Download as XLSX
+            filename = os.path.splitext(file_name)[0] + '.xlsx'
+            response = self.client.get(reverse('ical_download_xlsx'))
+            self.assertIn('Content-Disposition', response)
+            self.assertEqual(response['Content-Disposition'], ('attachment; filename="%s"' % filename))

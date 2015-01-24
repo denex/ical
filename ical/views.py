@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # encoding: utf-8
 
+from __future__ import print_function
+
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -8,10 +10,14 @@ from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.conf import settings
 
 from .forms import ICalUrlForm, UploadIcalFileForm
+try:
+    from ical import lib_ical
+except ImportError:
+    import lib_ical
 
-from .ical import getRawEventsFromUrl, get_events_from_unicode_stream
 import csv
 import os
 
@@ -22,7 +28,8 @@ def registration(request):
     form = UserCreationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         user = form.save()
-        print("NEW USER:", user)
+        if settings.DEBUG:
+            print("NEW USER:", user)
         return HttpResponseRedirect(reverse('login'))
 
     return render_to_response('registration/login.html',
@@ -31,10 +38,8 @@ def registration(request):
 
 
 def ical_index(request):
-    initial = {}
     url = request.session.get('ical_src_url')
-    if url:
-        initial['url'] = url
+    initial = {'url': url} if url else {}
     url_form = ICalUrlForm(initial=initial)
     file_form = UploadIcalFileForm()
     return render_to_response('ical_input.html',
@@ -54,8 +59,7 @@ def ical_post_url(request):
             return HttpResponseRedirect(reverse('ical_get_csv'))  # Redirect after POST
     else:
         if request.session.get('ical_src_url'):
-            form = ICalUrlForm(initial={
-                               'url': request.session.get('ical_src_url')})
+            form = ICalUrlForm(initial={'url': request.session.get('ical_src_url')})
         else:
             form = ICalUrlForm()  # An unbound form
     return render_to_response('ical_input.html',
@@ -77,13 +81,14 @@ def ical_upload_file(request):
             if file_ext.lower() != ".ics":
                 request.session['error'] = "File '%s' has not extension '.ics'" % (filename)
                 return HttpResponseRedirect(reverse('ical_error'))
-            print("Parsing iCal from Uploaded file:", filename, "size:", file_size)
+            if settings.DEBUG:
+                print("Parsing iCal from Uploaded file:", filename, "size:", file_size)
             request.session['ical_src_file'] = filename
             if value:
                 lines = ''
                 for chunk in value.chunks():
                     lines += chunk.decode('utf-8')
-                table = [ev.as_tuple() for ev in get_events_from_unicode_stream(lines.splitlines())]
+                table = [ev.as_tuple() for ev in lib_ical.get_events_from_unicode_stream(lines.splitlines())]
                 if table:
                     request.session['ical_table'] = table
                     return HttpResponseRedirect(reverse('ical_show_table'))
@@ -105,12 +110,17 @@ def ical_get_csv(request):
     url = request.session.get('ical_src_url')
     if not url:
         return HttpResponseRedirect(reverse('ical_post_url'))
-    print("Parsing iCal from URL:", url)
-    table = [ev.as_tuple() for ev in getRawEventsFromUrl(url)]
+    if settings.DEBUG:
+        print("Parsing iCal from URL:", url)
+    try:
+        table = [ev.as_tuple() for ev in lib_ical.download_events_from_url(url)]
+    except Exception as e:
+        request.session['error'] = "Error processing '%s': %s" % (url, str(e))
+        return HttpResponseRedirect(reverse('ical_error'))
     if table:
         request.session['ical_table'] = table
         return HttpResponseRedirect(reverse('ical_show_table'))
-
+    request.session['error'] = "Unknown error while processing '%s'" % url
     return HttpResponseRedirect(reverse('ical_error'))
 
 
@@ -126,7 +136,7 @@ def ical_download_csv(request):
     response['Content-Disposition'] = 'attachment; filename="%s"' % filename
     writer = csv.writer(response)
     for row in table:
-        if type(row) is str:
+        if type(row[1]) is str:
             writer.writerow(row)
         else:
             # Stupid CSV in Python 2 can not handle unicode, coverting to UTF-8

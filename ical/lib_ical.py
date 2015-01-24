@@ -137,11 +137,11 @@ def get_events_from_unicode_stream(unicode_stream):
     return sorted(eventList, key=lambda ev: ev.dtstart)
 
 
-def getRawEventsFromUrl(url):
+def download_events_from_url(url):
     return get_events_from_unicode_stream([l.decode('utf-8') for l in urlopen(url, timeout=3)])
 
 
-def test():
+def test_file():
     filename = "../test_ics/test.ics"
     with codecs.open(filename, encoding='utf-8') as f:
         events = get_events_from_unicode_stream(f.readlines())
@@ -155,5 +155,12 @@ def test():
     print(events)
 
 
+def test_url():
+    try:
+        events = download_events_from_url("http://404.err")
+    except Exception as e:
+        print(str(e))
+
 if __name__ == '__main__':
-    test()
+    test_file()
+    test_url()
